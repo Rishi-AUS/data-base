@@ -1,0 +1,40 @@
+WITH RECURSIVE ProcessedText AS (
+    -- Anchor member: Initialize with the first character capitalized
+    SELECT 
+        content_id,
+        content_text,
+        1 AS pos,
+        CAST(UPPER(SUBSTRING(content_text, 1, 1)) AS CHAR(1000)) AS converted_text
+    FROM 
+        user_content
+    
+    UNION ALL
+    
+    -- Recursive member: Iterate through the remaining characters
+    SELECT 
+        u.content_id,
+        u.content_text,
+        p.pos + 1,
+        CONCAT(
+            p.converted_text,
+            IF(
+                SUBSTRING(u.content_text, p.pos, 1) IN (' ', '-'),
+                UPPER(SUBSTRING(u.content_text, p.pos + 1, 1)),
+                LOWER(SUBSTRING(u.content_text, p.pos + 1, 1))
+            )
+        )
+    FROM 
+        user_content u
+    JOIN 
+        ProcessedText p ON u.content_id = p.content_id
+    WHERE 
+        p.pos < CHAR_LENGTH(u.content_text)
+)
+SELECT 
+    content_id,
+    content_text AS original_text,
+    converted_text
+FROM 
+    ProcessedText
+WHERE 
+    pos = CHAR_LENGTH(content_text);
