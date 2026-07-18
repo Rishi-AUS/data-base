@@ -1,0 +1,62 @@
+WITH RECURSIVE Hierarchy AS (
+    -- Anchor: Find the CEO (Level 1)
+    SELECT 
+        employee_id,
+        1 AS level
+    FROM 
+        Employees
+    WHERE 
+        manager_id IS NULL
+    
+    UNION ALL
+    
+    -- Recursive Step: Calculate levels for all subsequent reports
+    SELECT 
+        e.employee_id,
+        h.level + 1
+    FROM 
+        Employees e
+    JOIN 
+        Hierarchy h ON e.manager_id = h.employee_id
+),
+Descendants AS (
+    -- Anchor: Map every employee to themselves to include their own salary in the budget
+    SELECT 
+        employee_id AS mgr_id,
+        employee_id AS sub_id,
+        salary AS sub_salary
+    FROM 
+        Employees
+    
+    UNION ALL
+    
+    -- Recursive Step: Find all direct and indirect reports down the chain
+    SELECT 
+        d.mgr_id,
+        e.employee_id,
+        e.salary
+    FROM 
+        Descendants d
+    JOIN 
+        Employees e ON e.manager_id = d.sub_id
+)
+SELECT 
+    e.employee_id,
+    e.employee_name,
+    h.level,
+    COUNT(DISTINCT d.sub_id) - 1 AS team_size,
+    SUM(d.sub_salary) AS budget
+FROM 
+    Employees e
+JOIN 
+    Hierarchy h ON e.employee_id = h.employee_id
+JOIN 
+    Descendants d ON e.employee_id = d.mgr_id
+GROUP BY 
+    e.employee_id, 
+    e.employee_name, 
+    h.level
+ORDER BY 
+    h.level ASC, 
+    budget DESC, 
+    e.employee_name ASC;
