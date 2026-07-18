@@ -1,0 +1,30 @@
+WITH RankedStadium AS (
+    SELECT 
+        id, 
+        visit_date, 
+        people,
+        id - ROW_NUMBER() OVER(ORDER BY id) AS island
+    FROM 
+        Stadium
+    WHERE 
+        people >= 100
+),
+IslandCounts AS (
+    SELECT 
+        id, 
+        visit_date, 
+        people,
+        COUNT(*) OVER(PARTITION BY island) AS island_size
+    FROM 
+        RankedStadium
+)
+SELECT 
+    id, 
+    visit_date, 
+    people
+FROM 
+    IslandCounts
+WHERE 
+    island_size >= 3
+ORDER BY 
+    visit_date ASC;
