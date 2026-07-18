@@ -1,0 +1,60 @@
+
+WITH ChronologicalSessions AS (
+    SELECT 
+        student_id,
+        subject,
+        hours_studied,
+        session_date,
+        -- Establish a simple chronological order
+        ROW_NUMBER() OVER (PARTITION BY student_id ORDER BY session_date) AS seq,
+        -- Get the next session's date to check for consecutive day gaps
+        LEAD(session_date, 1) OVER (PARTITION BY student_id ORDER BY session_date) AS next_session_date
+    FROM 
+        study_sessions
+),
+SubjectNextOccurrence AS (
+    SELECT 
+        student_id,
+        hours_studied,
+        session_date,
+        seq,
+        next_session_date,
+        -- Find the chronological sequence number of the next session for the SAME subject
+        LEAD(seq, 1) OVER (PARTITION BY student_id, subject ORDER BY session_date) AS next_subj_seq
+    FROM 
+        ChronologicalSessions
+),
+PatternMetrics AS (
+    SELECT 
+        student_id,
+        -- The constant cycle length K is the distance between a subject and its next occurrence
+        MIN(next_subj_seq - seq) AS cycle_length,
+        COUNT(*) AS total_sessions,
+        SUM(hours_studied) AS total_study_hours,
+        -- Ensure the repetition interval remains perfectly constant for all sessions
+        COUNT(DISTINCT next_subj_seq - seq) AS unique_intervals,
+        -- Count how many gaps exceed 2 days
+        SUM(IF(DATEDIFF(next_session_date, session_date) > 2, 1, 0)) AS long_gaps
+    FROM 
+        SubjectNextOccurrence
+    GROUP BY 
+        student_id
+)
+SELECT 
+    s.student_id,
+    s.student_name,
+    s.major,
+    p.cycle_length,
+    ROUND(p.total_study_hours, 1) AS total_study_hours
+FROM 
+    students s
+JOIN 
+    PatternMetrics p ON s.student_id = p.student_id
+WHERE 
+    p.long_gaps = 0                          -- No gaps longer than 2 days
+    AND p.unique_intervals = 1               -- Pattern follows a fixed, constant rotation
+    AND p.cycle_length >= 3                  -- Must study at least 3 distinct subjects
+    AND p.total_sessions >= 2 * p.cycle_length -- Must complete at least 2 full cycles
+ORDER BY 
+    cycle_length DESC, 
+    total_study_hours DESC;
