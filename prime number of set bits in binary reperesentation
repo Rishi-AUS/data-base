@@ -1,0 +1,22 @@
+using System.Numerics;
+
+public class Solution {
+    public int CountPrimeSetBits(int left, int right) {
+        // A bitmask representing primes less than 20: 2, 3, 5, 7, 11, 13, 17, 19
+        // (1 << 2) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 11) | (1 << 13) | (1 << 17) | (1 << 19)
+        int primeMask = 665772; 
+        int count = 0;
+
+        for (int i = left; i <= right; i++) {
+            // Count the number of set bits (1s) in the binary representation of i
+            int setBits = BitOperations.PopCount((uint)i);
+            
+            // Check if the setBits-th bit is active in our prime mask
+            if ((primeMask & (1 << setBits)) != 0) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+}
