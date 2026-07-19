@@ -1,0 +1,21 @@
+using System;
+using System.Numerics;
+
+public class Solution {
+    public int[] SortByBits(int[] arr) {
+        Array.Sort(arr, (a, b) => {
+            int countA = BitOperations.PopCount((uint)a);
+            int countB = BitOperations.PopCount((uint)b);
+            
+            // If the bit counts are different, sort by bit counts ascending
+            if (countA != countB) {
+                return countA.CompareTo(countB);
+            }
+            
+            // If the bit counts are the same, sort by the actual value ascending
+            return a.CompareTo(b);
+        });
+        
+        return arr;
+    }
+}
