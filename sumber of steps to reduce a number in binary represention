@@ -1,0 +1,24 @@
+public class Solution {
+    public int NumSteps(string s) {
+        int operations = 0;
+        int carry = 0;
+
+        // Traverse from the rightmost bit up to the second bit (index 1)
+        for (int i = s.Length - 1; i > 0; i--) {
+            int currentBit = (s[i] - '0') + carry;
+
+            if (currentBit % 2 == 1) {
+                // If the value is odd, it takes 2 steps: 
+                // 1 step to add 1 (making it even) and 1 step to divide by 2.
+                operations += 2;
+                carry = 1; // Generates a carry for the next position
+            } else {
+                // If the value is even, it takes 1 step to divide by 2.
+                operations += 1;
+            }
+        }
+
+        // Add the final carry if it propagates past the leftmost bit
+        return operations + carry;
+    }
+}
