@@ -1,0 +1,22 @@
+using System;
+
+public class Solution {
+    public int BinaryGap(int n) {
+        int maxGap = 0;
+        int lastPos = -1;
+
+        for (int i = 0; i < 32; i++) {
+            // Check if the i-th bit is set to 1
+            if (((n >> i) & 1) == 1) {
+                // If this isn't the first 1 we've seen, calculate the gap
+                if (lastPos >= 0) {
+                    maxGap = Math.Max(maxGap, i - lastPos);
+                }
+                // Record the position of the current 1
+                lastPos = i;
+            }
+        }
+
+        return maxGap;
+    }
+}
