@@ -1,0 +1,39 @@
+using System.Text;
+
+public class Solution {
+    public string SmallestSubsequence(string s) {
+        // Array to store the total frequency of each character
+        int[] count = new int[26];
+        foreach (char ch in s) {
+            count[ch - 'a']++;
+        }
+
+        // Array to keep track of characters currently in our result stack
+        bool[] inStack = new bool[26];
+        // StringBuilder acts as our monotonic stack
+        StringBuilder sb = new StringBuilder();
+
+        foreach (char ch in s) {
+            // Decrement the remaining count for the current character
+            count[ch - 'a']--;
+
+            // If the character is already in the stack, skip it
+            if (inStack[ch - 'a']) {
+                continue;
+            }
+
+            // Pop characters from the stack if they are larger than the current character
+            // AND they appear again later in the string
+            while (sb.Length > 0 && sb[sb.Length - 1] > ch && count[sb[sb.Length - 1] - 'a'] > 0) {
+                inStack[sb[sb.Length - 1] - 'a'] = false;
+                sb.Remove(sb.Length - 1, 1);
+            }
+
+            // Push the current character onto the stack
+            sb.Append(ch);
+            inStack[ch - 'a'] = true;
+        }
+
+        return sb.ToString();
+    }
+}
