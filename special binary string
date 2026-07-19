@@ -1,0 +1,31 @@
+using System;
+using System.Collections.Generic;
+
+public class Solution {
+    public string MakeLargestSpecial(string s) {
+        if (string.IsNullOrEmpty(s)) return "";
+
+        List<string> res = new List<string>();
+        int count = 0;
+        int i = 0;
+
+        for (int j = 0; j < s.Length; ++j) {
+            if (s[j] == '1') count++;
+            else count--;
+
+            // When count reaches 0, we found an independent special substring
+            if (count == 0) {
+                // Recursively process the inner part: s[i+1 ... j-1]
+                string innerSpecial = MakeLargestSpecial(s.Substring(i + 1, j - i - 1));
+                res.Add("1" + innerSpecial + "0");
+                i = j + 1; // Move the start pointer for the next component
+            }
+        }
+
+        // Sort the components in descending lexicographical order
+        res.Sort((a, b) => b.CompareTo(a));
+
+        // Join the sorted components back together
+        return string.Join("", res);
+    }
+}
