@@ -1,0 +1,19 @@
+public class Solution {
+    public int ConcatenatedBinary(int n) {
+        long result = 0;
+        int MOD = 1_000_000_007;
+        int bitLength = 0;
+
+        for (int i = 1; i <= n; i++) {
+            // If i is a power of 2, the bit length required to represent it increases by 1
+            if ((i & (i - 1)) == 0) {
+                bitLength++;
+            }
+
+            // Shift the accumulated result to the left and add the current number i
+            result = ((result << bitLength) | (uint)i) % MOD;
+        }
+
+        return (int)result;
+    }
+}
