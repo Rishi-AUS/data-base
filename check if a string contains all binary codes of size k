@@ -1,0 +1,29 @@
+using System;
+using System.Collections.Generic;
+
+public class Solution {
+    public bool HasAllCodes(string s, int k) {
+        // Total number of unique binary codes of length k
+        int totalRequired = 1 << k; // Equivalent to 2^k
+        
+        // If the string isn't even long enough to hold all unique codes
+        if (s.Length - k + 1 < totalRequired) {
+            return false;
+        }
+
+        HashSet<string> uniqueCodes = new HashSet<string>();
+
+        // Slide a window of size k across the string
+        for (int i = 0; i <= s.Length - k; i++) {
+            string sub = s.Substring(i, k);
+            uniqueCodes.Add(sub);
+
+            // Optimization: Stop early if we have found all combinations
+            if (uniqueCodes.Count == totalRequired) {
+                return true;
+            }
+        }
+
+        return uniqueCodes.Count == totalRequired;
+    }
+}
